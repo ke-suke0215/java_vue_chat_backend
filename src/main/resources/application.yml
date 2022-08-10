@@ -1,0 +1,12 @@
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/java_vue_chat
+    username: postgres
+    password: postgres
+  jmx:
+    default-domain: java_vue_chat
+server:
+  servlet:
+    context-path: /java_vue_chat
