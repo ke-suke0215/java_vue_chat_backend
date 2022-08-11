@@ -8,6 +8,10 @@
 
 `create database java_vue_chat`
 
+### データベースに接続
+
+`\c java_vue_chat`
+
 
 ### userテーブルの作成
 
@@ -44,3 +48,11 @@ create table messages (
 ### データベースの削除
 
 `drop table if exists {tableName} cascade;`
+
+### PSQLException: ERROR: permission denied for table と出たとき
+原因：データベースへの権限が無い
+#### 解決策
+`GRANT SELECT, UPDATE, INSERT ON {table_name} TO {user_name};`
+
+### APIの動作確認
+curl  -X POST 0H "Content-Type: application/json" -d '{"name": "TestName1", "email": "TestEmail1", "password": "TestPassword1"}' "http://localhost:8080/java_vue_chat/user/insert"
