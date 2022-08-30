@@ -19,7 +19,7 @@ import com.example.demo.domain.User;
  */
 @Repository
 public class UserRepository {
-	
+
 	/**
 	 * ユーザーオブジェクトを作成するローマッパー
 	 */
@@ -31,7 +31,7 @@ public class UserRepository {
 		user.setPassword(rs.getString("password"));
 		return user;
 	};
-	
+
 	@Autowired
 	private NamedParameterJdbcTemplate template;
 
@@ -39,20 +39,42 @@ public class UserRepository {
 	 * ユーザ情報を登録or更新
 	 * 
 	 * @param user
+	 * @return 登録or更新したゆーざ情報（失敗した場合はnull）
 	 */
-	public void save(User user) {
+	public User save(User user) throws Exception {
 		SqlParameterSource param = new BeanPropertySqlParameterSource(user);
-
 		String sql = null;
-		if (user.getId() == null) {
-			sql = "INSERT INTO users(name, email, password) VALUES (:name, :email, :password);";
 
-		} else {
-			sql = "UPDATE users SET name = :name, email = :email, password = :password WHERE id = :id";
+		try {
+			if (user.getId() == null) /* ユーザ登録処理 */ {
+				sql = "INSERT INTO users(name, email, password) VALUES (:name, :email, :password);";
+				template.update(sql, param);
+
+				// 登録したユーザidを入れ直して代入
+				user.setId(getMaxUserId());
+			} else /* ユーザ情報更新処理 */ {
+				sql = "UPDATE users SET name = :name, email = :email, password = :password WHERE id = :id";
+				template.update(sql, param);
+			}
+		} catch (Exception e) {
+			user = null;
+			e.printStackTrace();
+			throw new Exception();
 		}
-		template.update(sql, param);
+		return user;
 	}
-	
+
+	/**
+	 * usersテーブル内の最大のidを取得
+	 * 
+	 * @return テーブル内の最大のid（データが無ければ0）
+	 */
+	private Integer getMaxUserId() {
+		String sql = "SELECT * FROM users WHERE id = (SELECT MAX(id) FROM users)";
+		List<User> userList = template.query(sql, USER_ROW_MAPPER);
+		return userList.size() == 0 ? 0 : userList.get(0).getId();
+	}
+
 	/**
 	 * メールアドレスからユーザーを検索します.
 	 * 
@@ -63,11 +85,10 @@ public class UserRepository {
 		String sql = "select id, name, email, password from users where email = :email;";
 		SqlParameterSource param = new MapSqlParameterSource().addValue("email", email);
 		List<User> userList = template.query(sql, param, USER_ROW_MAPPER);
-		
-		if(userList.size() == 0) {
+
+		if (userList.size() == 0) {
 			return null;
 		}
-		System.out.println(userList.get(0));
 		return userList.get(0);
 	}
 }

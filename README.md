@@ -54,5 +54,10 @@ create table messages (
 #### 解決策
 `GRANT SELECT, UPDATE, INSERT ON {table_name} TO {user_name};`
 
+### ERROR: permission denied for sequence users_id_seq と出たとき
+原因：serial型にinsertする権限が無い
+
+`GRANT USAGE ON SEQUENCE users_id_seq TO {user_name};`
+
 ### APIの動作確認
-curl  -X POST 0H "Content-Type: application/json" -d '{"name": "TestName1", "email": "TestEmail1", "password": "TestPassword1"}' "http://localhost:8080/java_vue_chat/user/insert"
+curl  -X POST -H "Content-Type: application/json" -d '{"name": "TestName1", "email": "TestEmail1", "password": "TestPassword1"}' "http://localhost:8080/java_vue_chat/user/insert"
